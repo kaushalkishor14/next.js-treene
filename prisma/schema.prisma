@@ -1,0 +1,109 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("MONGODB_URI")
+}
+
+
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   // MongoDB ObjectId as String
+  user         Account  @relation(fields: [userId], references: [id]) // Relation with Account model
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Account {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String   @unique
+  password    String
+  role        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isAdmin     Boolean? @default(false) // Admin flag for access control
+  sessions    Session[]
+}
+
+model CourseRegistration {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String   @unique
+  course       String
+  phone        String   // Keeping as 'phone' since it's a String type
+  futureGoals  String
+}
+
+
+// -------------------------------------------------------------- NOV 1 2024----------------------------------------------
+
+model Course {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  image           String    // Image file path
+  name            String    // Course name
+  description     String    // Course description
+  username        String    // Creator's username
+  startDate       DateTime  // Start date of the course
+  endDate         DateTime  // End date of the course
+  language        String    // Language of the course
+  price           Float     // Price of the course
+  learningPoints  String[]  // Simplified to array of strings
+  links           Link[]  // Array of links
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  modules         Module[]  // Relation to Module model
+}
+
+model Module {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId        String   // MongoDB ObjectId as String
+  course          Course   @relation(fields: [courseId], references: [id]) // Relation with Course model
+  tags            String[]
+  moduleName      String
+  lectures        Lecture[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+} 
+model Lecture {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  moduleId        String   // MongoDB ObjectId as String
+  module          Module   @relation(fields: [moduleId], references: [id]) // Relation with Module model
+  name            String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Link{
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId        String   // MongoDB ObjectId as String
+  course          Course   @relation(fields: [courseId], references: [id]) // Relation with Course model
+  name            String
+  url             String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+
+model Blog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String   @unique
+  author    String
+  blocks    Block[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Block {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  blogId    String   // MongoDB ObjectId as String
+  blog      Blog     @relation(fields: [blogId], references: [id]) // Relation with Blog model
+  type      String
+  content   String
+  language  String?
+}
